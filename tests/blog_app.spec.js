@@ -52,7 +52,7 @@ describe('Blog app', () => {
   describe.only('When logged in', () => {
     beforeEach(async ({ page }) => {
       await loginWith(page, 'mluukkai', 'salainen');
-      // Create the blog using the real API
+      
       // When creating the blog using mock data
       await createBlog(page, 'a note created by playwright8', 'jabs8', 'www.consistency_leads_to_conviction.com8', '100');
       // When creating the blog using mock data
@@ -63,20 +63,22 @@ describe('Blog app', () => {
        // Listen for the confirm dialog and accept it
        page.on('dialog', dialog => dialog.accept());
 
-       const showButtons = page.getByRole('button', { name: 'show' });
-       await showButtons.nth(0).click(); // Clicks the first "show" button
-       
-       // Find the correct "delete" button associated with the first blog
-       const deleteButton = page.locator('div')
-              .filter({ hasText: 'a note created by playwright8' })
-              .getByRole('button', { name: 'delete' });
-       await expect(deleteButton).toBeVisible();
+       // Locate the blog container based on the text
+        const blogContainer = page.locator('div', { hasText: 'a note created by playwright8' });
+
+        // Within that blog container, find and click the "show" button
+        const showButton = blogContainer.getByRole('button', { name: 'show' });
+        await showButton.click();
+
+        // Find the delete button within the same blog container
+        const deleteButton = blogContainer.getByRole('button', { name: 'delete' });
+        await expect(deleteButton).toBeVisible();
   
        // Delete the blog
        await deleteButton.click();
 
        // Verify the blog is no longer visible
-       await expect(page.getByText('a note created by playwright8').nth(0)).not.toBeVisible();
+       await expect(page.getByText('Title: a note created by playwright8')).not.toBeVisible();
     });
   });
 });
