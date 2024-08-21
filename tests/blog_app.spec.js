@@ -1,5 +1,6 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test');
 const { loginWith, createBlog } = require('./helper.cjs');
+const { create } = require('domain');
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -13,42 +14,30 @@ describe('Blog app', () => {
     });
 
     // Intercept the request to the blogs API endpoint
-    await page.route('**/api/blogs', (route) => {
-      // Mocked blog data with the user field populated
-      const mockedBlogs = [
-        {
-          id: '56c38c89ff3cac133d3ce9c6',
-          title: 'a note created by playwright5',
-          author: 'jabs5',
-          url: 'www.consistency_leads_to_conviction.com',
-          likes: '70',
-          user: {
-            username: 'mluukkai',
-            name: 'Matti Luukkainen',
-            id: '66c38c88ff3cac133d3ce9bb'
-          }
-        },
-        {
-          id: '66c38c89ff3cac133d3ce9c5',
-          title: 'a note created by playwright6',
-          author: 'jabs6',
-          url: 'www.consistency_leads_to_conviction.com',
-          likes: '80',
-          user: {
-            username: 'mluukkai',
-            name: 'Matti Luukkainen',
-            id: '66c38c88ff3cac133d3ce9ba'
-          }
-        }
-      ];
+    // await page.route('**/api/blogs', (route) => {
+    //   // Mocked blog data with the user field populated
+    //   const mockedBlogs = [
+    //     {
+    //       id: '56c38c89ff3cac133d3ce9c6',
+    //       title: 'a note created by playwright5',
+    //       author: 'jabs5',
+    //       url: 'www.consistency_leads_to_conviction.com',
+    //       likes: '70',
+    //       user: {
+    //         username: 'mluukkai',
+    //         name: 'Matti Luukkainen',
+    //         id: '66c4b7435055889a34447f16'
+    //       }
+    //     }
+    //   ];
 
-      // Fulfill the request with the mocked response
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify(mockedBlogs)
-      });
-    });
+    //   // Fulfill the request with the mocked response
+    //   route.fulfill({
+    //     status: 200,
+    //     contentType: 'application/json',
+    //     body: JSON.stringify(mockedBlogs)
+    //   });
+    // });
 
     await page.goto('/');
   });
@@ -87,26 +76,27 @@ describe('Blog app', () => {
   });
 
   describe.only('When logged in', () => {
-    // beforeEach(async ({ page }) => {
-    //   await loginWith(page, 'mluukkai', 'salainen')
-    // });
+    beforeEach(async ({ page }) => {
+      await loginWith(page, 'mluukkai', 'salainen')
+      await createBlog(page, 'a note created by playwright7', 'jabs7', 'www.consistency_leads_to_conviction.com7', '90')
+      await createBlog(page, 'a note created by playwright8', 'jabs8', 'www.consistency_leads_to_conviction.com8', '100')
+    });
 
     test('a blog can be deleted', async ({ page }) => {
-      await loginWith(page, 'mluukkai', 'salainen');
        // Listen for the confirm dialog and accept it
        page.on('dialog', dialog => dialog.accept());
 
        const showButtons = page.getByRole('button', { name: 'show' });
        await showButtons.nth(0).click(); // Clicks the first "show" button
        // Find the correct "delete" button associated with the first blog
-       const deleteButton = page.locator('div').filter({ hasText: 'a note created by playwright6' }).getByRole('button', { name: 'delete' });
+       const deleteButton = page.locator('div').filter({ hasText: 'a note created by playwright5' }).getByRole('button', { name: 'delete' });
        await expect(deleteButton).toBeVisible();
   
        // Delete the blog
        await deleteButton.click();
   
        // Verify the blog is no longer visible
-       await expect(page.getByText('a note created by playwright6')).not.toBeVisible();
+       await expect(page.getByText('a note created by playwright5')).not.toBeVisible();
     });
   });
 });
