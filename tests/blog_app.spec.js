@@ -5,7 +5,7 @@ const { create } = require('domain');
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
     await request.post('/api/testing/reset');
-    const userResponse = await request.post('/api/users', {
+    await request.post('/api/users', {
       data: {
         name: 'Matti Luukkainen',
         username: 'mluukkai',
@@ -13,57 +13,8 @@ describe('Blog app', () => {
       }
     });
 
-    // Parse the response body to extract the user data
-    const userData = await userResponse.json();  // Parse the JSON response
-    const userId = userData.id;  // Now you can access the ID
-    console.log("User ID:", userId);
-
-    //const userId = userResponse.data.id;  // Extract the generated user ID
-
-    // Intercept the request to the blogs API endpoint
-    // await page.route('**/api/blogs', (route) => {
-    //   // Mocked blog data with the user field populated
-    //   const mockedBlogs = [
-    //     {
-    //       id: '56c38c89ff3cac133d3ce9c6',
-    //       title: 'a note created by playwright5',
-    //       author: 'jabs5',
-    //       url: 'www.consistency_leads_to_conviction.com',
-    //       likes: '70',
-    //       user: {
-    //         username: 'mluukkai',
-    //         name: 'Matti Luukkainen',
-    //         id: '66c4b7435055889a34447f16'
-    //       }
-    //     }
-    //   ];
-
-    //   // Fulfill the request with the mocked response
-    //   route.fulfill({
-    //     status: 200,
-    //     contentType: 'application/json',
-    //     body: JSON.stringify(mockedBlogs)
-    //   });
-    // });
-
-    await page.goto('/');
-
-    await loginWith(page, 'mluukkai', 'salainen');
-
-    // Create the blog using the real API
-    // When creating the blog using mock data
-    await createBlog(page, 'a note created by playwright7', 'jabs7', 'www.consistency_leads_to_conviction.com8', '100', {
-      id: userId,
-      username: 'mluukkai',
-      name: 'Matti Luukkainen',
+      await page.goto('/');
     });
-    // When creating the blog using mock data
-    await createBlog(page, 'a note created by playwright8', 'jabs8', 'www.consistency_leads_to_conviction.com8', '90', {
-      id: userId,
-      username: 'mluukkai',
-      name: 'Matti Luukkainen',
-    });
-      });
 
   test('Login form is shown', async ({ page }) => {
     await page.goto('/');
@@ -99,11 +50,14 @@ describe('Blog app', () => {
   });
 
   describe.only('When logged in', () => {
-    // beforeEach(async ({ page }) => {
-    //   await loginWith(page, 'mluukkai', 'salainen')
-    //   await createBlog(page, 'a note created by playwright7', 'jabs7', 'www.consistency_leads_to_conviction.com7', '90')
-    //   await createBlog(page, 'a note created by playwright8', 'jabs8', 'www.consistency_leads_to_conviction.com8', '100')
-    // });
+    beforeEach(async ({ page }) => {
+      await loginWith(page, 'mluukkai', 'salainen');
+      // Create the blog using the real API
+      // When creating the blog using mock data
+      await createBlog(page, 'a note created by playwright8', 'jabs8', 'www.consistency_leads_to_conviction.com8', '100');
+      // When creating the blog using mock data
+      await createBlog(page, 'a note created by playwright7', 'jabs7', 'www.consistency_leads_to_conviction.com', '90');
+    });
 
     test('a blog can be deleted', async ({ page }) => {
        // Listen for the confirm dialog and accept it
@@ -122,7 +76,7 @@ describe('Blog app', () => {
        await deleteButton.click();
 
        // Verify the blog is no longer visible
-       await expect(page.getByText('a note created by playwright8')).not.toBeVisible();
+       await expect(page.getByText('a note created by playwright8').nth(0)).not.toBeVisible();
     });
   });
 });
