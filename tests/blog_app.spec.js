@@ -62,9 +62,6 @@ describe('Blog app', () => {
     test('a blog can be deleted', async ({ page }) => {
        // Listen for the confirm dialog and accept it
        page.on('dialog', dialog => dialog.accept());
-
-       // Locate the blog container based on the text
-       // const blogContainer = page.locator('div', { hasText: 'a note created by playwright7' });
       
         const blogContainer = page.locator('div.blog-show', { hasText: 'Title: a note created by playwright8' });
 
