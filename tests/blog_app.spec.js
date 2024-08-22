@@ -64,7 +64,9 @@ describe('Blog app', () => {
        page.on('dialog', dialog => dialog.accept());
 
        // Locate the blog container based on the text
-        const blogContainer = page.locator('div', { hasText: 'a note created by playwright8' });
+       // const blogContainer = page.locator('div', { hasText: 'a note created by playwright7' });
+      
+        const blogContainer = page.locator('div.blog-show', { hasText: 'Title: a note created by playwright8' });
 
         // Within that blog container, find and click the "show" button
         const showButton = blogContainer.getByRole('button', { name: 'show' });
