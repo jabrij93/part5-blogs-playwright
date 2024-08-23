@@ -56,28 +56,34 @@ describe('Blog app', () => {
       // When creating the blog using mock data
       await createBlog(page, 'a note created by playwright8', 'jabs8', 'www.consistency_leads_to_conviction.com8', '100');
       // When creating the blog using mock data
-      await createBlog(page, 'a note created by playwright7', 'jabs7', 'www.consistency_leads_to_conviction.com', '90');
+      await createBlog(page, 'a note created by playwright6', 'jabs6', 'www.consistency_leads_to_conviction.com', '90');
+      await createBlog(page, 'a note created by playwright7', 'jabs7', 'www.consistency_leads_to_conviction.com', '95');
     });
 
     test('a blog can be deleted', async ({ page }) => {
        // Listen for the confirm dialog and accept it
        page.on('dialog', dialog => dialog.accept());
       
-        const blogContainer = page.locator('div.blog-show', { hasText: 'Title: a note created by playwright8' });
+       const blogContainer = await page.locator('div.blog', { hasText: 'Title: a note created by playwright7' });
 
-        // Within that blog container, find and click the "show" button
-        const showButton = blogContainer.getByRole('button', { name: 'show' });
-        await showButton.click();
+       // Within that blog container, find and click the "show" button
+       const showButton = blogContainer.getByRole('button', { name: 'show' });
+       await showButton.click();
 
-        // Find the delete button within the same blog container
-        const deleteButton = blogContainer.getByRole('button', { name: 'delete' });
-        await expect(deleteButton).toBeVisible();
+       // Find the delete button within the same blog container
+       const deleteButton = blogContainer.getByRole('button', { name: 'delete' });
+       await expect(deleteButton).toBeVisible();
   
        // Delete the blog
        await deleteButton.click();
 
        // Verify the blog is no longer visible
-       await expect(page.getByText('Title: a note created by playwright8')).not.toBeVisible();
+       await expect(page.getByText('Title: a note created by playwright7')).not.toBeVisible();
     });
+
+    //test('blog is ordered from high likes to low likes', async ({ page }) => {
+      // cy.get('.togglableContent').eq()
+    //Listen for the confirm dialog and ac
+    // });
   });
 });
