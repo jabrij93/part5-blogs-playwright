@@ -26,7 +26,7 @@ describe('Blog app', () => {
 
   describe('Login', () => {
     test('succeeds with correct credentials', async ({ page }) => {
-      await page.getByRole('button', { name: 'log in' }).click();
+      await page.getByRole('button', { name: 'login' }).click();
       await page.getByTestId('username').fill('mluukkai');
       await page.getByTestId('password').fill('salainen');
       await page.getByRole('button', { name: 'login' }).click();
@@ -35,7 +35,7 @@ describe('Blog app', () => {
     });
 
     test('fails with wrong credentials', async ({ page }) => {
-      await page.getByRole('button', { name: 'log in' }).click();
+      await page.getByRole('button', { name: 'login' }).click();
       await page.getByTestId('username').fill('mluukkai');
       await page.getByTestId('password').fill('wrong');
       await page.getByRole('button', { name: 'login' }).click();
@@ -49,7 +49,7 @@ describe('Blog app', () => {
     });
   });
 
-  describe.only('When logged in', () => {
+  describe('When logged in', () => {
     beforeEach(async ({ page }) => {
       await loginWith(page, 'mluukkai', 'salainen');
       
