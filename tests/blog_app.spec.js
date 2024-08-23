@@ -80,7 +80,7 @@ describe('Blog app', () => {
        await expect(page.getByText('Title: a note created by playwright6')).not.toBeVisible();
     });
 
-    test.only('blog order is from high likes to low likes', async ({ page }) => {
+    test('blog order is from high likes to low likes', async ({ page }) => {
       const firstBlogContainer = await page.locator('div.blog').nth(0);
       const displayFirstBlog = await firstBlogContainer.getByText('a note created by playwright8');
       await expect(displayFirstBlog).toBeVisible();
