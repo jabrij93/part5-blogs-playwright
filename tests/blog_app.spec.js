@@ -80,18 +80,34 @@ describe('Blog app', () => {
        await expect(page.getByText('Title: a note created by playwright6')).not.toBeVisible();
     });
 
-    test('blog order is from high likes to low likes', async ({ page }) => {
-      const firstBlogContainer = await page.locator('div.blog').nth(0);
-      const displayFirstBlog = await firstBlogContainer.getByText('a note created by playwright8');
-      await expect(displayFirstBlog).toBeVisible();
+    describe('blog order is from high likes to low likes', () => {
+      test('correct order', async ({ page }) => {
+        const firstBlogContainer = await page.locator('div.blog').nth(0);
+        const displayFirstBlog = await firstBlogContainer.getByText('a note created by playwright8');
+        await expect(displayFirstBlog).toBeVisible();
 
-      const secondBlogContainer = await page.locator('div.blog').nth(1);
-      const displaySecondBlog = await secondBlogContainer.getByText('a note created by playwright7');
-      await expect(displaySecondBlog).toBeVisible();
+        const secondBlogContainer = await page.locator('div.blog').nth(1);
+        const displaySecondBlog = await secondBlogContainer.getByText('a note created by playwright7');
+        await expect(displaySecondBlog).toBeVisible();
 
-      const thirdBlogContainer = await page.locator('div.blog').nth(2);
-      const displayThirdBlog = await thirdBlogContainer.getByText('a note created by playwright6');
-      await expect(displayThirdBlog).toBeVisible();
-     });
+        const thirdBlogContainer = await page.locator('div.blog').nth(2);
+        const displayThirdBlog = await thirdBlogContainer.getByText('a note created by playwright6');
+        await expect(displayThirdBlog).toBeVisible();
+      });
+
+      test('not correct order ', async ({ page }) => {
+        const firstBlogContainer = await page.locator('div.blog').nth(0);
+        const displayFirstBlog = await firstBlogContainer.getByText('a note created by playwright7');
+        await expect(displayFirstBlog).not.toBeVisible();
+
+        const secondBlogContainer = await page.locator('div.blog').nth(1);
+        const displaySecondBlog = await secondBlogContainer.getByText('a note created by playwright6');
+        await expect(displaySecondBlog).not.toBeVisible();
+
+        const thirdBlogContainer = await page.locator('div.blog').nth(2);
+        const displayThirdBlog = await thirdBlogContainer.getByText('a note created by playwright8');
+        await expect(displayThirdBlog).not.toBeVisible();
+      });
+    })
   });
 });
