@@ -12,6 +12,7 @@ const createBlog = async (page, title, author, url, likes) => {
     await page.getByTestId('url').fill(url)
     await page.getByTestId('likes').fill(likes)
     await page.getByRole('button', { name: 'add' }).click()
+    await page.getByTestId(`blog-${title}`).locator('.blog-list').waitFor();
 }
 
 
