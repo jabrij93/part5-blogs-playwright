@@ -49,6 +49,8 @@ describe('Blog app', () => {
     });
   });
 
+  test.describe.configure({ mode: 'serial' });
+
   describe('When logged in', () => {
     beforeEach(async ({ page, request }) => {
       await loginWith(page, 'mluukkai', 'salainen');
