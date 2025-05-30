@@ -32,7 +32,6 @@ describe('Blog app', () => {
 
       await expect(page.getByText('Matti Luukkainen logged in')).toBeVisible();
     });
-
     test('fails with wrong credentials', async ({ page }) => {
       await page.getByRole('button', { name: 'login' }).click();
       await page.getByTestId('username').fill('mluukkai');
@@ -58,6 +57,20 @@ describe('Blog app', () => {
       await createBlog(page, 'a note created by playwright7', 'jabs7', 'www.consistency_leads_to_conviction.com', '95');
       await createBlog(page, 'a note created by playwright8', 'jabs8', 'www.consistency_leads_to_conviction.com8', '100');
       await createBlog(page, 'a note created by playwright6', 'jabs6', 'www.consistency_leads_to_conviction.com', '90');
+    });
+
+    test('a new blog can be created', async ({ page }) => {
+      await createBlog(page, 'create blog', 'jabs', 'www.consistency_leads_to_conviction.com', '101');
+      await expect(page.getByText('Added create blog by jabs')).toBeVisible();
+    });
+
+    test('a blog can be liked', async ({ page }) => {
+      const card = page.getByTestId('blog-a note created by playwright7');
+    
+      await card.getByRole('button', { name: 'show' }).click()
+    
+      await card.getByRole('button', { name: 'like' }).click();
+      await expect(page.getByText('Liked a note created by playwright7 by jabs7!')).toBeVisible();
     });
 
     test('a blog can be deleted', async ({ page }) => {
