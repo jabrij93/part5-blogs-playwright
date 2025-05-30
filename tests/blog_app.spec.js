@@ -1,5 +1,6 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test');
 const { loginWith, createBlog } = require('./helper.cjs');
+const { create } = require('domain');
 
 describe('Blog app', () => {
   let mockedBlogs;
@@ -18,89 +19,9 @@ describe('Blog app', () => {
         password: 'salainen'
       }
     });
-  
-    // Step 3: Initialize the mock data for blogs
-    mockedBlogs = [
-      {
-        id: '66a3d13c2ed207561a14a43a',
-        title: 'testadd',
-        author: 'jabss',
-        url: 'www.consistency.com',
-        likes: 40,
-        user: {
-          username: 'mluukkai',
-          name: 'Matti Luukkainen',
-          id: fixedUserId
-        }
-      },
-      {
-        id: '66aa543f231fe8e6a4e121da',
-        title: 'testzzzz',
-        author: 'ewqeqwewq',
-        url: 'ewqewq.com',
-        likes: 293,
-        user: {
-          username: 'mluukkai',
-          name: 'Matti Luukkainen',
-          id: fixedUserId
-        }
-      },
-      {
-        id: '66aa5681231fe8e6a4e121ff',
-        title: 'test_add_new_bloggg',
-        author: 'test add new blog',
-        url: 'www.keep_going.comzz',
-        likes: 370,
-        user: {
-          username: 'mluukkai',
-          name: 'Matti Luukkainen',
-          id: fixedUserId
-        }
-      }
-    ];
-  
-    // Step 4: Intercept the request to the blogs API endpoint
-    await page.route('**/api/blogs', (route, request) => {
-      if (request.method() === 'GET') {
-        route.fulfill({
-          status: 200,
-          contentType: 'application/json',
-          body: JSON.stringify(mockedBlogs)
-        });
-      } else if (request.method() === 'DELETE') {
-        const url = new URL(request.url());
-        const blogId = url.pathname.split('/').pop();
-  
-        // Remove the blog with the matching ID from the mocked data
-        mockedBlogs = mockedBlogs.filter(blog => blog.id !== blogId);
-  
-        route.fulfill({
-          status: 204, // No Content
-        });
-      } else if (request.method() === 'POST') {
-        // Handle adding a new blog
-        const newBlog = JSON.parse(request.postData());
-        newBlog.id = `66c${Math.floor(Math.random() * 1e8).toString(16)}`; // Generate a new ID for the blog
-        newBlog.user = {
-          username: 'mluukkai',
-          name: 'Matti Luukkainen',
-          id: fixedUserId
-        };
-        mockedBlogs.push(newBlog);
-  
-        route.fulfill({
-          status: 201, // Created
-          contentType: 'application/json',
-          body: JSON.stringify(newBlog)
-        });
-      } else {
-        route.continue(); // Let other requests pass through
-      }
+
+      await page.goto('/');
     });
-  
-    // Step 5: Navigate to the application page
-    await page.goto('/');
-  });
 
   test('Login form is shown', async ({ page }) => {
     await page.goto('/');
@@ -112,7 +33,7 @@ describe('Blog app', () => {
 
   describe('Login', () => {
     test('succeeds with correct credentials', async ({ page }) => {
-      await page.getByRole('button', { name: 'log in' }).click();
+      await page.getByRole('button', { name: 'login' }).click();
       await page.getByTestId('username').fill('mluukkai');
       await page.getByTestId('password').fill('salainen');
       await page.getByRole('button', { name: 'login' }).click();
@@ -121,7 +42,7 @@ describe('Blog app', () => {
     });
 
     test('fails with wrong credentials', async ({ page }) => {
-      await page.getByRole('button', { name: 'log in' }).click();
+      await page.getByRole('button', { name: 'login' }).click();
       await page.getByTestId('username').fill('mluukkai');
       await page.getByTestId('password').fill('wrong');
       await page.getByRole('button', { name: 'login' }).click();
@@ -135,54 +56,55 @@ describe('Blog app', () => {
     });
   });
 
-  describe.only('When logged in', () => {
-    // beforeEach(async ({ page }) => {
-    //   await loginWith(page, 'mluukkai', 'salainen')
-    // });
-    test('add blog to db', async ({ page, request }) => {
+  test.describe.configure({ mode: 'serial' });
+
+  describe('When logged in', () => {
+    beforeEach(async ({ page, request }) => {
+      await loginWith(page, 'mluukkai', 'salainen');
       
-      const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1sdXVra2FpIiwiaWQiOiI2NmM0YWU2MjI3OTQ0NjYzNzg0OTZjMWIiLCJpYXQiOjE3MjQxNjU4NDUsImV4cCI6MTcyNDE2OTQ0NX0.jzjzbNzN3CFsh5C0Wz9u19SHtkgqWDQTtkh27iC2DLg";
-        
-      // Insert the blog data
-      await request.post('/api/blogs', {
-        data: {
-          title: 'a note created by playwright6',
-          author: 'jabs6',
-          url: 'www.consistency_leads_to_conviction.com',
-          likes: '80'
-        },
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      // // When creating the blog using mock data
+      await createBlog(page, 'a note created by playwright7', 'jabs7', 'www.consistency_leads_to_conviction.com', '95');
+      await createBlog(page, 'a note created by playwright8', 'jabs8', 'www.consistency_leads_to_conviction.com8', '100');
+      await createBlog(page, 'a note created by playwright6', 'jabs6', 'www.consistency_leads_to_conviction.com', '90');
     });
 
     test('a blog can be deleted', async ({ page }) => {
-      await loginWith(page, 'mluukkai', 'salainen');
+      const card = page.getByTestId('blog-a note created by playwright7');
        // Listen for the confirm dialog and accept it
-       page.on('dialog', async dialog => {
-        if (dialog.type() === 'confirm') {
-          await dialog.accept(); // This line accepts the confirm dialog (equivalent to clicking "Ok")
-        } else {
-          await dialog.dismiss(); // This handles other types of dialogs, though it's optional
-        }
+      page.once('dialog', async dialog => {
+        expect(dialog.message()).toBe('Are you sure you want to delete a note created by playwright7 by jabs7?');
+        await dialog.accept();
       });
 
-       const showButtons = page.getByRole('button', { name: 'show' });
-       await showButtons.nth(0).click(); // Clicks the first "show" button
+      await card.getByRole('button', { name: 'show' }).click()
+       // Find the delete button within the same blog container
+      await card.getByRole('button', { name: 'delete' }).click()
 
-       // Locate the delete button associated with the first blog
-       const deleteButton = page.locator('div')
-            .filter({ hasText: 'a note created by playwright6' })
-            .getByRole('button', { name: 'delete' });
+       // Verify the blog is no longer visible
+       await expect(page.getByText('SUCCESSFULLY DELETED!')).toBeVisible();
+       await expect(page.getByText('Title: a note created by playwright7')).not.toBeVisible();
+    });
 
-       await expect(deleteButton).toBeVisible();
-       await deleteButton.click();
-
-       // Add a small delay to ensure UI updates
-       // await page.waitForTimeout(500); // Adjust this delay as needed
-
-       await expect(page.getByText('a note created by playwright6')).not.toBeVisible();
+    test('blogs are ordered by number of likes from highest to lowest', async ({ page }) => {
+      await page.waitForSelector('.blog');
+  
+      const showButtons = await page.getByRole('button', { name: 'show' }).all();
+      for (const btn of showButtons) {
+        await btn.click();
+      }
+  
+      const blogs = await page.locator('.blog').all();
+  
+      const likesArray = await Promise.all(
+        blogs.map(async (blog) => {
+          const text = await blog.textContent();
+          const match = text.match(/Likes:\s*(\d+)/);
+          return match ? parseInt(match[1], 10) : 0;
+        })
+      );
+  
+      const sortedLikes = [...likesArray].sort((a, b) => b - a);
+      expect(likesArray).toEqual(sortedLikes);
     });
 
     
