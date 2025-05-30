@@ -1,19 +1,11 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test');
 const { loginWith, createBlog } = require('./helper.cjs');
-const { create } = require('domain');
 
 describe('Blog app', () => {
-  let mockedBlogs;
-
   beforeEach(async ({ page, request }) => {
-    // Step 1: Reset the database
     await request.post('/api/testing/reset');
-  
-    // Step 2: Register the user with a fixed _id
-    const fixedUserId = '66c46c2d1ec2be204cdee734'; // Fixed id
     await request.post('/api/users', {
       data: {
-        _id: fixedUserId,
         name: 'Matti Luukkainen',
         username: 'mluukkai',
         password: 'salainen'
@@ -25,7 +17,7 @@ describe('Blog app', () => {
 
   test('Login form is shown', async ({ page }) => {
     await page.goto('/');
-    
+
     const locator = await page.getByText('Blogs');
     await expect(locator).toBeVisible();
     await expect(page.getByText('Blog app, Department of Computer Science, University of Helsinki 2024')).toBeVisible();
@@ -37,7 +29,7 @@ describe('Blog app', () => {
       await page.getByTestId('username').fill('mluukkai');
       await page.getByTestId('password').fill('salainen');
       await page.getByRole('button', { name: 'login' }).click();
-  
+
       await expect(page.getByText('Matti Luukkainen logged in')).toBeVisible();
     });
 
@@ -46,7 +38,7 @@ describe('Blog app', () => {
       await page.getByTestId('username').fill('mluukkai');
       await page.getByTestId('password').fill('wrong');
       await page.getByRole('button', { name: 'login' }).click();
-    
+
       const errorMessage = page.getByText('wrong username or password');
       await expect(errorMessage).toBeVisible();
       await expect(errorMessage).toHaveCSS('border-style', 'solid');
@@ -61,7 +53,7 @@ describe('Blog app', () => {
   describe('When logged in', () => {
     beforeEach(async ({ page, request }) => {
       await loginWith(page, 'mluukkai', 'salainen');
-      
+
       // // When creating the blog using mock data
       await createBlog(page, 'a note created by playwright7', 'jabs7', 'www.consistency_leads_to_conviction.com', '95');
       await createBlog(page, 'a note created by playwright8', 'jabs8', 'www.consistency_leads_to_conviction.com8', '100');
@@ -87,14 +79,14 @@ describe('Blog app', () => {
 
     test('blogs are ordered by number of likes from highest to lowest', async ({ page }) => {
       await page.waitForSelector('.blog');
-  
+
       const showButtons = await page.getByRole('button', { name: 'show' }).all();
       for (const btn of showButtons) {
         await btn.click();
       }
-  
+
       const blogs = await page.locator('.blog').all();
-  
+
       const likesArray = await Promise.all(
         blogs.map(async (blog) => {
           const text = await blog.textContent();
@@ -102,11 +94,9 @@ describe('Blog app', () => {
           return match ? parseInt(match[1], 10) : 0;
         })
       );
-  
+
       const sortedLikes = [...likesArray].sort((a, b) => b - a);
       expect(likesArray).toEqual(sortedLikes);
     });
-
-    
   });
 });
